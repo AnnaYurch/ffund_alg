@@ -1,0 +1,29 @@
+Tree for expression: AS(B(E(G,T,R(W,Z)),F(L,M)),C)
+AS
+    B
+        E
+            G
+            T
+            R
+                W
+                Z
+        F
+            L
+            M
+    C
+
+Tree for expression: X(Y,Z(A,B))
+X
+    Y
+    Z
+        A
+        B
+
+Tree for expression: (X(Y,Z(A,B)))
+
+    X
+        Y
+        Z
+            A
+            B
+
