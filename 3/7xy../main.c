@@ -364,6 +364,13 @@ int main() {
             printf("Некорректный ввод. Пожалуйста, введите число.\n");
             while (getchar() != '\n');
             continue;
+        } else {
+            char extra;
+            if (scanf("%c", &extra) != 1 || extra != '\n') {
+                printf("Некорректный ввод. Пожалуйста, введите ОДНО число.\n");
+                while (getchar() != '\n');
+                continue;
+            }
         }
 
         switch (choice) {

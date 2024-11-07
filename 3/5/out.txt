@@ -1,0 +1,5 @@
+Student: John Doe, Group: CS101, Average Grade: 86.60
+Above Average: John Doe
+Above Average: John Ae
+Above Average: Jane Smith
+Student: Jane Smith, Group: CS101, Average Grade: 88.40
