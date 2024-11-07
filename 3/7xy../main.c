@@ -4,7 +4,7 @@
 #include <ctype.h>
 
 //не хочет последнего удалять
-#define MAX_NAME_LEN 100
+#define MAX_NAME_LEN 80
 #define MAX_DATE_LEN 11 // dd-mm-yyyy
 #define MAX_UNDO 100
 
@@ -42,6 +42,9 @@ Liver* createLiver(char* lastName, char* firstName, char* patronymic,
 }
 
 int isValidName(const char* name) {
+    if (strlen(name) > 70) {
+        return 0;
+    }
     if (!isupper(name[0])) {
         return 0;
     }
