@@ -56,6 +56,10 @@ int isValidName(const char* name) {
     return 1;
 }
 
+int is_leap_year(int year) {
+    return (year % 4 == 0 && year % 100 != 0) || (year % 400 == 0);
+}
+
 int isValidDate(const char* date) {
     if (strlen(date) != 10 || date[2] != '-' || date[5] != '-') {
         return 0;
@@ -67,6 +71,22 @@ int isValidDate(const char* date) {
     if (day < 1 || day > 31 || month < 1 || month > 12 || year < 0 || year > 2024) {
         return 0;
     }
+
+    int maxDay;
+    switch (month) {
+        case 4: case 6: case 9: case 11:
+            maxDay = 30;
+            break;
+        case 2:
+            maxDay = is_leap_year(year) ? 29 : 28;
+            break;
+        default:
+            maxDay = 31;
+    }
+
+
+    return day <= maxDay;
+
     return 1;
 }
 
