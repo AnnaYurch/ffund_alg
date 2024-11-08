@@ -40,7 +40,7 @@ int read_students(const char *file_in, Student **students, int *count) {
             Student *temp = realloc(*students, capacity * sizeof(Student));
             if (temp == NULL) {
                 fprintf(stderr, "Memory yps2\n");
-                free(*students);
+                free_students(*students, *count);
                 fclose(file);
                 return 0;
             }
@@ -51,7 +51,7 @@ int read_students(const char *file_in, Student **students, int *count) {
         s.grades = malloc(5 * sizeof(unsigned char));
         if (s.grades == NULL) {
             fprintf(stderr, "Memory yps3\n");
-            free(*students);
+            free_students(*students, *count);
             fclose(file);
             return 0;
         }
@@ -61,16 +61,42 @@ int read_students(const char *file_in, Student **students, int *count) {
                             &s.grades[0], &s.grades[1], &s.grades[2], &s.grades[3], &s.grades[4]);
 
         if (result == 9) {
+            if (!isValidName(s.name) || !isValidName(s.surname) || strlen(s.group) == 0 || strlen(s.group) > 9) {
+                fprintf(stderr, "Ошибка в данных (имя, фамилия или группа). Пропуск записи.\n");
+                free(s.grades);
+                continue;
+            }
+
+            int valid_grades = 1;
+            for (int i = 0; i < NUM_EXAMS; i++) {
+                if (s.grades[i] > 100) {
+                    valid_grades = 0;
+                    break;
+                }
+            }
+
+            if (!valid_grades) {
+                fprintf(stderr, "Ошибка в данных (оценки вне допустимого диапазона). Пропуск записи.\n");
+                free(s.grades);
+                continue;
+            }
             (*students)[(*count)++] = s;
+            print_student(&s);
         } else {
+            if (feof(file)) {
+                break;
+            }
+            fprintf(stderr, "Ошибка чтения данных (получено: %d из 9). Пропуск записи.\n", result);
             free(s.grades);
-            break;
+            int ch;
+            while ((ch = fgetc(file)) != EOF && (ch != '\n')) {
+            }
+            continue;
         }
     }
 
     fclose(file);
     return 1;
-
 }
 
 void free_students(Student *students, int count) {
