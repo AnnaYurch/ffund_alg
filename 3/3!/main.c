@@ -4,6 +4,7 @@
 #include <limits.h>
 #include <unistd.h>
 #include <ctype.h>
+//не вывозит вещественную зарплату
 
 #define PATH_M 1024
 
