@@ -1,16 +1,16 @@
-Tree for expression: AS(B(E(G,T,R(W,Z)),F(L,M)),C)
-AS
+Tree for expression: ASsdfdsdsf(B(E(G,adkuhfkadhfT,Radhfakjhfad(W,Z)),F(L,sdfhdsM)),Cadifhajhfda)
+ASsdfdsdsf
     B
         E
             G
-            T
-            R
+            adkuhfkadhfT
+            Radhfakjhfad
                 W
                 Z
         F
             L
-            M
-    C
+            sdfhdsM
+    Cadifhajhfda
 
 Tree for expression: X(Y,Z(A,B))
 X
@@ -19,11 +19,27 @@ X
         A
         B
 
-Tree for expression: (X(Y,Z(A,B)))
+Tree for expression: 
 
-    X
-        Y
-        Z
-            A
-            B
+
+Tree for expression: 
+
+
+Tree for expression: a(s,f(sdfadfda,453))
+a
+    s
+    f
+        sdfadfda
+        453
+
+Tree for expression: 
+
+
+Tree for expression: 
+
+
+Tree for expression: (g,j)
+
+    g
+    j
 
