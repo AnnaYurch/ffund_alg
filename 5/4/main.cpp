@@ -7,7 +7,7 @@ std::cout - использовать cout из пространства имен
 std::end1 - нужен для завершения строки и сбрасывает буфер вывода, чтоб была гарантия, что все вывелось
 */
 
-//про вывод в си++ и про ссылки и про осановку программы
+//про ссылки
 class Complex {
 private:
     double real;
@@ -42,7 +42,7 @@ public: //тута методы
     }
 
     double modul() const {
-        return std::sqrt(real * real + imag * imag); //зачем std::?
+        return std::sqrt(real * real + imag * imag);
     }
 
     double argument() const {
