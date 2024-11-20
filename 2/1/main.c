@@ -1,5 +1,4 @@
 #include <stdio.h>
-#include <math.h>
 #include <ctype.h>
 #include <stdlib.h>
 
@@ -11,6 +10,25 @@ typedef enum kOpts {
     OPT_C,
     OPT_UNKNOWN
 } kOpts;
+
+int my_isdigit(char c) {
+    return c >= '0' && c <= '9';
+}
+
+int is_seed(const char *str) {
+    if (str == NULL || *str == '\0') {
+        return 0;
+    }
+
+    while (*str != '\0') {
+        if (!my_isdigit(*str)) {
+            return 0;
+        }
+        str++;
+    }
+
+    return 1;
+}
 
 int my_strlen(const char* str) {
     const char* s = str;
@@ -155,6 +173,52 @@ char* HandlerOptN(const char *str) {
     return final_result;
 }
 
+char* HandlerOptC(int argc, char *argv[], int seed) {
+    int count = argc;
+    char **new_strs = (char **)malloc(count * sizeof(char *));
+    if (new_strs == NULL) {
+        printf("Memory yps3");
+        return NULL;
+    }
+    
+    for (int i = 0; i < count; i++) {
+        new_strs[i] = argv[i];
+    }
+ 
+    srand(seed);
+
+    for (int i = count - 1; i > 0; i--) {
+        int j = rand() % (i + 1);
+        char *temp = new_strs[i];
+        new_strs[i] = new_strs[j];
+        new_strs[j] = temp;
+    }
+
+    char *result = (char *)malloc(1);
+    if (result == NULL) {
+        printf("Memory yps4");
+        free(new_strs);
+        return NULL;
+    }
+    
+    result[0] = '\0';
+
+    for (int i = 0; i < count; i++) {
+        char *new_res = my_strcat(result, new_strs[i]);
+        if (new_res == NULL) {
+            printf("Memory yps5");
+            free(result);
+            free(new_res);
+            return NULL;
+        } 
+        free(result);
+        result = new_res;
+    }
+    
+    free(new_strs);
+    return result;
+}
+
 int main(int argc, char* argv[]) {
     if (argc < 3) {
         printf("Error: Not enough arguments.\n");
@@ -202,7 +266,16 @@ int main(int argc, char* argv[]) {
                 printf("Error: Not enough arguments.\n");
                 return 1;
             }
-            //HandlerOptC(x);
+            if (is_seed(argv[2]) == 0) {
+                printf("Error: seed is not int number.\n");
+                return 1;
+            }
+            int seed = my_atoi(argv[2]);
+            char *res = HandlerOptC(argc - 3, argv + 3, seed);
+            if (res != NULL) {
+                printf("%s\n", res);
+                free(res);
+            }
             break;
         default:
             printf("Unknown option.\n");

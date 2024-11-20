@@ -116,8 +116,9 @@ public:
     std::pair<binary_int, binary_int> split_bits() const {
         int high_bits = value & 0xFFFF0000;
         int low_bits = value & 0x0000FFFF;
-        return {binary_int(high_bits), binary_int(low_bits)};
+        return std::make_pair(binary_int(high_bits), binary_int(low_bits));
     }
+    
 };
 
 std::ostream &operator<<(std::ostream &os, const binary_int &bi) {

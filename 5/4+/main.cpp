@@ -1,20 +1,13 @@
 #include <iostream>
 #include <cmath>
-/*
-private переменные, недоступные напрямую снаружи класса, можно использовать внутри методов класса (инкапсуляция)
-std::cout - использовать cout из пространства имен std
-<< - отправить в ...
-std::end1 - нужен для завершения строки и сбрасывает буфер вывода, чтоб была гарантия, что все вывелось
-*/
 
-//про ссылки
 class Complex {
 private:
     double real;
     double imag;    
 
 public: //тута методы
-    Complex(double r = 0, double i = 0) : real(r), imag(i) {} //конструктор::начальная инициализация
+    Complex(double r = 0, double i = 0) : real(r), imag(i) {}
 
     //складываем
     Complex add(const Complex &other) const {
@@ -34,7 +27,7 @@ public: //тута методы
     Complex share(const Complex &other) const {
         double denominator = other.real * other.real + other.imag * other.imag;
         if (denominator == 0) {
-            throw std::string{"Деление на 0"}; //throw оператор для выброса исключения 
+            throw std::string{"Деление на 0"};
         }                                                 
         double r = (real * other.real + imag * other.imag) / denominator;
         double i = (imag * other.real - real * other.imag) / denominator;
@@ -81,7 +74,6 @@ int main() {
     Complex product = c1.multiply(c2);
     std::cout << "Умножение: ";
     product.display();
-
     try {
         Complex quotient = c1.share(c2);
         std::cout << "Деление: ";
