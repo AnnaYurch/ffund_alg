@@ -1,3 +1,24 @@
 Above Average: John Doe
-Above Average: John Ae
-Above Average: Jane Smith
+Above Average: Jane Smitffffff
+Student: John Doe, Group: CS101, Average Grade: 86.60
+Above Average (83.849998): 
+Student (): John Doe, Group: CS101, Average Grade: 86.60
+Above Average (83.849998): 
+Student (): Jane Smitffffff, Group: CS101, Average Grade: 88.40
+Above Average (83.849998): 
+Above Average (83.849998): 
+Above Average (83.849998): 
+Student (): John Doe, Group: CS101, Average Grade: 86.60
+Student (): Jane Smitffffff, Group: CS101, Average Grade: 88.40
+Above Average (83.849998): 
+Student (): John Doe, Group: CS101, Average Grade: 86.60
+Student (): Jane Smitffffff, Group: CS101, Average Grade: 88.40
+Student: Jane Smitffffff, Group: CS101, Average Grade: 88.40
+Student: Jane Smitffffff, Group: CS101, Average Grade: 88.40
+Student: Jane Smitffffff, Group: CS101, Average Grade: 88.40
+Above Average (83.849998): 
+Student: John Doe, Group: CS101, Average Grade: 86.60
+Student: Jane Smitffffff, Group: CS101, Average Grade: 88.40
+Above Average (83.849998): 
+Student: John Doe, Group: CS101, Average Grade: 86.60
+Student: Jane Smitffffff, Group: CS101, Average Grade: 88.40

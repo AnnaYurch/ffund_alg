@@ -9,7 +9,7 @@
 #define MAX_LEN_GR 10
 #define NUM_EXAMS 5
 
-
+//валидация чиселок
 typedef struct Student {
     unsigned int id;
     char name[MAX_LEN_NAME];
@@ -86,54 +86,39 @@ int read_students(const char *file_in, Student **students, int *count) {
             return 0;
         }
 
-        int result = fscanf(file, "%u %52s %52s %12s", &s.id, s.name, s.surname, s.group);
+        char *name;
+        int result = fscanf(file, "%u %79s %79s %9s %hhu %hhu %hhu %hhu %hhu", 
+                            &s.id, s.name, s.surname, s.group, &s.grades[0], &s.grades[1], 
+                            &s.grades[2], &s.grades[3], &s.grades[4]);
 
-        if (result == 4) {
-            if (!isValidName(s.name) || !isValidName(s.surname) || strlen(s.group) == 0 || strlen(s.group) > 9
-                || strlen(s.name) > 49 || strlen(s.surname) > 49) {
+        if (result == 9) {
+            if (!isValidName(s.name) || !isValidName(s.surname) || strlen(s.group) == 0 || strlen(s.group) > 9) {
                 fprintf(stderr, "Ошибка в данных (имя, фамилия или группа). Пропуск записи.\n");
                 free(s.grades);
-                int ch;
-                while ((ch = fgetc(file)) != EOF && (ch != '\n')) {}
                 continue;
             }
-
-            int result2 = fscanf(file, "%hhu %hhu %hhu %hhu %hhu",
-                            &s.grades[0], &s.grades[1], &s.grades[2], &s.grades[3], &s.grades[4]);
-
-            if (result2 == 5) {
-                int valid_grades = 1;
-                for (int i = 0; i < NUM_EXAMS; i++) {
-                    if (s.grades[i] > 100) {
-                        valid_grades = 0;
-                        break;
-                    }
-                }
-
-                if (!valid_grades) {
-                    fprintf(stderr, "Ошибка в данных (оценки вне допустимого диапазона). Пропуск записи.\n");
+            int flag = 1;
+            for (int i = 0; i < *count; i++) {
+                if ((*students)[i].id == s.id) {
+                    flag = 0;
+                    printf("Такой id (%u) студента уже есть\n", s.id);
                     free(s.grades);
-                    continue;
+                    break;
                 }
+            }
+            if (flag == 1) {
                 (*students)[(*count)++] = s;
                 print_student(&s);
-            } else {
-                fprintf(stderr, "Ошибка чтения данных (получено: %d из 9). Пропуск записи.\n", result);
-                free(s.grades);
-                int ch;
-                while ((ch = fgetc(file)) != EOF && (ch != '\n')) {}
-                continue;
-            } 
-        } else {
-            if (feof(file)) {
-                break;
             }
+        } else {
             fprintf(stderr, "Ошибка чтения данных (получено: %d из 9). Пропуск записи.\n", result);
             free(s.grades);
             int ch;
             while ((ch = fgetc(file)) != EOF && (ch != '\n')) {
             }
-            continue;
+        }
+        if (feof(file)) {
+            break;
         }
     }
 
@@ -155,24 +140,30 @@ void search_by_name(Student *students, int count, const char *name) {
     for (int i = 0; i < count; i++) {
         if (strcmp(students[i].name, name) == 0) {
             print_student(&students[i]);
+            return;
         }
     }
+    printf("Student not found.\n");
 }
 
 void search_by_surname(Student *students, int count, const char *surname) {
     for (int i = 0; i < count; i++) {
         if (strcmp(students[i].surname, surname) == 0) {
             print_student(&students[i]);
+            return;
         }
     }
+    printf("Student not found.\n");
 }
 
 void search_by_group(Student *students, int count, const char *group) {
     for (int i = 0; i < count; i++) {
         if (strcmp(students[i].group, group) == 0) {
             print_student(&students[i]);
+            return;
         }
     }
+    printf("Students not found.\n");
 }
 
 int compare_by_id(const void *a, const void *b) {
@@ -220,9 +211,10 @@ void trace_student(const char *trace_filename, const Student *student) {
 void trace_above_average(const char *trace_filename, Student *students, int count, float avg) {
     FILE *file = fopen(trace_filename, "a");
     if (file) {
+        fprintf(file, "Above Average (%f): \n", avg);
         for (int i = 0; i < count; i++) {
-            if (average_grade(&students[i]) > avg) {
-                fprintf(file, "Above Average: %s %s\n", students[i].name, students[i].surname);
+            if (average_grade(&students[i]) > avg) {   
+                fprintf(file, "Student: %s %s, Group: %s, Average Grade: %.2f\n", (&students[i])->name, (&students[i])->surname, (&students[i])->group, average_grade((&students[i])));
             }
         }
         fclose(file);
@@ -294,17 +286,17 @@ int main(int argc, char *argv[]) {
 
         switch (choice) {
             case 1:
-                printf("Enter ID: ");
+                printf("Enter ID (it's a number): ");
                 scanf("%u", &id);
                 search_by_id(students, count, id);
                 break;
             case 2:
-                printf("Enter Name: ");
+                printf("Enter Name (without unreal symbols): ");
                 scanf("%s", buffer);
                 search_by_name(students, count, buffer);
                 break;
             case 3:
-                printf("Enter Surname: ");
+                printf("Enter Surname (without unreal symbols): ");
                 scanf("%s", buffer);
                 search_by_surname(students, count, buffer);
                 break;
@@ -344,16 +336,23 @@ int main(int argc, char *argv[]) {
             case 9:
                 printf("Enter ID for tracing: ");
                 scanf("%u", &id);
+                int flag = 0;
                 for (int i = 0; i < count; i++) {
                     if (students[i].id == id) {
                         trace_student(trace_file, &students[i]);
+                        flag = 1;
+                        printf("Студент выведен\n");
                         break;
                     }
+                }
+                if (flag == 0) {
+                    printf("Студента нет\n");
                 }
                 break;
             case 10: {
                 float avg_all = average_grade_all(students, count);
                 trace_above_average(trace_file, students, count, avg_all);
+                printf("Студенты выведены\n");
                 break;
             }
             case 11:
