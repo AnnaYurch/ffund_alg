@@ -1,5 +1,4 @@
 #include <iostream>
-#include <bitset>
 
 class binary_int {
 private:
@@ -22,7 +21,7 @@ private:
         return add(a, negate(b));
     }
 
-    int multiply (int a, int b) const {
+    int multiply(int a, int b) const {
         int result = 0;
         while (b != 0) {
             if (b & 1) {
@@ -38,6 +37,7 @@ private:
 public:
     binary_int(int val = 0) : value(val) {}
 
+    //не надо
     int get_value() const {
         return value;
     }
@@ -51,7 +51,7 @@ public:
         return *this;
     }
     
-    binary_int operator++(int) { //посфиксный
+    binary_int operator++(int) {
         binary_int temp = *this;
         value = add(value, 1);
         return temp;
@@ -118,13 +118,22 @@ public:
         int low_bits = value & 0x0000FFFF;
         return std::make_pair(binary_int(high_bits), binary_int(low_bits));
     }
-    
+    /*
+    friend std::ostream &operator<<(std::ostream &os, const binary_int &bi) {
+        for (int i = 31; i >= 0; i--) {
+            os << ((bi.get_value() >> i) & 1);
+        }
+        return os;
+    }
+    */
 };
 
 std::ostream &operator<<(std::ostream &os, const binary_int &bi) {
-        os << std::bitset<32>(bi.get_value());
-        return os;
+    for (int i = 31; i >= 0; i--) {
+        os << ((bi.get_value() >> i) & 1);
     }
+    return os;
+}
 
 int main() {
     binary_int a(5);
