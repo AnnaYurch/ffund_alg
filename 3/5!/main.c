@@ -9,7 +9,7 @@
 #define MAX_LEN_GR 10
 #define NUM_EXAMS 5
 
-//валидация чиселок
+//большие слова не обрабатывает
 typedef struct Student {
     unsigned int id;
     char name[MAX_LEN_NAME];
@@ -27,6 +27,15 @@ int isValidName(const char* name) {
     }
     for (int i = 1; name[i] != '\0'; ++i) {
         if (!islower(name[i])) {
+            return 0;
+        }
+    }
+    return 1;
+}
+
+int valid_num(const char* id) {
+    for (int i = 0; id[i] != '\0'; ++i) {
+        if (id[i] < '0' || id[i] > '9') {
             return 0;
         }
     }
@@ -87,28 +96,61 @@ int read_students(const char *file_in, Student **students, int *count) {
         }
 
         char *name;
-        int result = fscanf(file, "%u %79s %79s %9s %hhu %hhu %hhu %hhu %hhu", 
-                            &s.id, s.name, s.surname, s.group, &s.grades[0], &s.grades[1], 
-                            &s.grades[2], &s.grades[3], &s.grades[4]);
+        char n_id[10];
+        char n_g0[4];
+        char n_g1[4];
+        char n_g2[4];
+        char n_g3[4];
+        char n_g4[4];
+        int result = fscanf(file, "%9s %79s %79s %9s %3s %3s %3s %3s %3s", 
+                            n_id, s.name, s.surname, s.group, n_g0, n_g1, 
+                            n_g2, n_g3, n_g4);
 
         if (result == 9) {
+            if (valid_num(n_id) == 0 || valid_num(n_g0) == 0 || valid_num(n_g1) == 0 ||
+                valid_num(n_g2) == 0 || valid_num(n_g3) == 0 || valid_num(n_g4) == 0) {
+                fprintf(stderr, "Ошибка в данных (id или в оценках). Пропуск записи.\n");
+                free(s.grades);
+                continue;
+            }
+            s.id = atoi(n_id);
+            s.grades[0] = atoi(n_g0);
+            s.grades[1] = atoi(n_g1);
+            s.grades[2] = atoi(n_g2);
+            s.grades[3] = atoi(n_g3);
+            s.grades[4] = atoi(n_g4);
+
             if (!isValidName(s.name) || !isValidName(s.surname) || strlen(s.group) == 0 || strlen(s.group) > 9) {
                 fprintf(stderr, "Ошибка в данных (имя, фамилия или группа). Пропуск записи.\n");
                 free(s.grades);
                 continue;
             }
+
             int flag = 1;
             for (int i = 0; i < *count; i++) {
                 if ((*students)[i].id == s.id) {
                     flag = 0;
-                    printf("Такой id (%u) студента уже есть\n", s.id);
-                    free(s.grades);
+                    //printf("Такой id (%u) студента уже есть\n", s.id);
+                    //free(s.grades);
                     break;
                 }
             }
+
+            for (int i = 0; i < 5; i++) {
+                if (s.grades[i] > 100 || s.grades[i] < 0) {
+                    flag = 0;
+                    //printf("Неправильные данные у %u\n", s.id);
+                    //free(s.grades);
+                    break;
+                }
+            }
+
             if (flag == 1) {
                 (*students)[(*count)++] = s;
                 print_student(&s);
+            } else {
+                printf("Неправильные данные у %u (либо id совпадают, либо оценка неправильная)\n", s.id);
+                free(s.grades);
             }
         } else {
             fprintf(stderr, "Ошибка чтения данных (получено: %d из 9). Пропуск записи.\n", result);

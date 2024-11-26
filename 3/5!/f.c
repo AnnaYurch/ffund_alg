@@ -9,7 +9,7 @@
 #define MAX_LEN_GR 10
 #define NUM_EXAMS 5
 
-
+//валидация чиселок
 typedef struct Student {
     unsigned int id;
     char name[MAX_LEN_NAME];
@@ -87,17 +87,15 @@ int read_students(const char *file_in, Student **students, int *count) {
         }
 
         char *name;
-        int result = fscanf(file, "%u %s %s %s %hhu %hhu %hhu %hhu %hhu", 
+        
+        int result = fscanf(file, "%u %79s %79s %9s %hhu %hhu %hhu %hhu %hhu", 
                             &s.id, s.name, s.surname, s.group, &s.grades[0], &s.grades[1], 
                             &s.grades[2], &s.grades[3], &s.grades[4]);
 
         if (result == 9) {
-            if (!isValidName(s.name) || !isValidName(s.surname) || strlen(s.group) == 0 || strlen(s.group) > 9
-                || strlen(s.name) > 49 || strlen(s.surname) > 49) {
+            if (!isValidName(s.name) || !isValidName(s.surname) || strlen(s.group) == 0 || strlen(s.group) > 9) {
                 fprintf(stderr, "Ошибка в данных (имя, фамилия или группа). Пропуск записи.\n");
                 free(s.grades);
-                int ch;
-                while ((ch = fgetc(file)) != EOF && (ch != '\n')) {}
                 continue;
             }
             int flag = 1;
