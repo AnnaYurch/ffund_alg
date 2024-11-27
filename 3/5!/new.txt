@@ -1,0 +1,4 @@
+101 John Doe CS101 
+102 John Ae CS101 
+103 Jane Smint CS181 
+104 Alice Brown CS16 

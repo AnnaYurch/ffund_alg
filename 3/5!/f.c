@@ -9,7 +9,7 @@
 #define MAX_LEN_GR 10
 #define NUM_EXAMS 5
 
-//валидация чиселок
+//101 Alice Brown CS16 75(пробел) не обрабатывает
 typedef struct Student {
     unsigned int id;
     char name[MAX_LEN_NAME];
@@ -27,6 +27,15 @@ int isValidName(const char* name) {
     }
     for (int i = 1; name[i] != '\0'; ++i) {
         if (!islower(name[i])) {
+            return 0;
+        }
+    }
+    return 1;
+}
+
+int valid_num(const char* num) {
+    for (int i = 0; num[i] != '\0'; ++i) {
+        if (num[i] < '0' || num[i] > '9') {
             return 0;
         }
     }
@@ -78,6 +87,170 @@ int read_students(const char *file_in, Student **students, int *count) {
         }
 
         Student s;
+        char buffer[100] = {0};
+        int index = 0;
+        int ch;
+
+        //считываем id
+        int flag_id = 1; 
+        while ((ch = fgetc(file)) != EOF && ch != '\n') {
+            if (isdigit(ch)) { 
+                if (index < sizeof(buffer) - 1) {
+                    buffer[index++] = ch;
+                } else {
+                    fprintf(stderr, "ID is too long. ");
+                    flag_id = 0;
+                    while ((ch = fgetc(file)) != '\n' && ch != EOF) {
+                        continue;
+                    }
+                    break;
+                }
+            } else if (ch == ' ' || ch == '\t') {
+                break;
+            } else {
+                fprintf(stderr, "ID is uncorrect. ");
+                flag_id = 0;
+                while ((ch = fgetc(file)) != '\n' && ch != EOF) {
+                    continue;
+                }
+                break;
+            }
+        }
+
+        if (ch == '\n') {
+            fprintf(stderr, "Uncorrect student\n");
+            continue;
+        }
+
+        buffer[index] = '\0';
+        s.id = atoi(buffer);
+        int flag = 1;
+        for (int i = 0; i < *count; ++i) {
+            if ((*students)[i].id == s.id) {
+                flag = 0;
+                fprintf(stderr, "Такой id (%u) студента уже есть\n", s.id);
+                break;
+            }
+        }
+        
+        while (ch == ' ' || ch == '\t') {
+            ch = fgetc(file);
+        }
+        if (flag == 0) {
+            while ((ch = fgetc(file)) != '\n' && ch != EOF) {
+                continue;
+            }
+            continue;
+        }
+        //cчитываем name
+        int flag_name = 1;
+        index = 0;
+        while (ch != EOF && ch != ' ' && ch != '\n') {
+            if (index < MAX_LEN_NAME - 1) {
+                s.name[index++] = ch;
+            } else {
+                fprintf(stderr, "Name is too long. ");
+                flag_name = 0;
+                while ((ch = fgetc(file)) != '\n' && ch != EOF) {
+                    continue;
+                }
+                break;
+            }
+            ch = fgetc(file);
+        }
+
+        if (ch == '\n') {
+            fprintf(stderr, "Uncorrect student2\n");
+            continue;
+        }
+
+        s.name[index] = '\0';
+        if (!isValidName(s.name) && flag_name != 0) {
+            fprintf(stderr, "Uncorrect name. ");
+            while ((ch = fgetc(file)) != '\n' && ch != EOF) {
+                continue;
+            }
+        }
+
+        if (ch == '\n') {
+            fprintf(stderr, "Uncorrect student22\n");
+            continue;
+        }
+
+        while (ch == ' ' || ch == '\t') {
+            ch = fgetc(file);
+        }
+
+        //cчитываем surname
+        int flag_surname = 1;
+        index = 0;
+        while (ch != EOF && ch != ' ' && ch != '\n') {
+            if (index < MAX_LEN_NAME - 1) {
+                s.surname[index++] = ch;
+            } else {
+                fprintf(stderr, "Surname is too long. ");
+                flag_surname = 0;
+                while ((ch = fgetc(file)) != '\n' && ch != EOF) {
+                    continue;
+                }
+                break;
+            }
+            ch = fgetc(file);
+        }
+        if (ch == '\n') {
+            fprintf(stderr, "Uncorrect student3\n");
+            continue;
+        }
+
+        s.surname[index] = '\0';
+        if (!isValidName(s.surname) && flag_surname != 0) {
+            fprintf(stderr, "Uncorrect surname. ");
+            while ((ch = fgetc(file)) != '\n' && ch != EOF) {
+                continue;
+            }
+        }
+
+        if (ch == '\n') {
+            fprintf(stderr, "Uncorrect student33\n");
+            continue;
+        }
+
+        while (ch == ' ' || ch == '\t') {
+            ch = fgetc(file);
+        }
+
+        //считываем группу
+        index = 0;
+        while (ch != EOF && ch != ' ' && ch != '\n') {
+            if (index < MAX_LEN_GR - 1) {
+                s.group[index++] = ch;
+            } else {
+                fprintf(stderr, "Group is too long. ");
+                while ((ch = fgetc(file)) != '\n' && ch != EOF) {
+                    continue;
+                }
+                break;
+            }
+            ch = fgetc(file);
+        }
+
+        if (ch == '\n') {
+            fprintf(stderr, "Uncorrect student4\n");
+            continue;
+        }
+
+        s.group[index] = '\0';
+
+        while (ch == ' ' || ch == '\t') {
+            ch = fgetc(file);
+        }
+
+        if (ch == '\n') {
+            fprintf(stderr, "Uncorrect student5\n");
+            continue;
+        }
+
+        //считываем оценки
         s.grades = malloc(5 * sizeof(unsigned char));
         if (s.grades == NULL) {
             fprintf(stderr, "Memory yps3\n");
@@ -85,39 +258,65 @@ int read_students(const char *file_in, Student **students, int *count) {
             fclose(file);
             return 0;
         }
-
-        char *name;
         
-        int result = fscanf(file, "%u %79s %79s %9s %hhu %hhu %hhu %hhu %hhu", 
-                            &s.id, s.name, s.surname, s.group, &s.grades[0], &s.grades[1], 
-                            &s.grades[2], &s.grades[3], &s.grades[4]);
-
-        if (result == 9) {
-            if (!isValidName(s.name) || !isValidName(s.surname) || strlen(s.group) == 0 || strlen(s.group) > 9) {
-                fprintf(stderr, "Ошибка в данных (имя, фамилия или группа). Пропуск записи.\n");
-                free(s.grades);
-                continue;
-            }
-            int flag = 1;
-            for (int i = 0; i < *count; i++) {
-                if ((*students)[i].id == s.id) {
-                    flag = 0;
-                    printf("Такой id (%u) студента уже есть\n", s.id);
-                    free(s.grades);
+        int flag_grade = 1;
+        for (int i = 0; i < NUM_EXAMS; ++i) {
+            index = 0;
+            buffer[0] = '\0';
+            while (1) {
+                if (isdigit(ch)) {
+                    if (index < sizeof(buffer) - 1) {
+                        buffer[index++] = ch;
+                    } else {
+                        fprintf(stderr, "Grade is too long\n");
+                        flag_grade = 0;
+                        break;
+                    }
+                    ch = fgetc(file);
+                } else if (ch == ' ' || ch == '\t' || ch == '\n' || ch == EOF) {
+                    buffer[index] = '\0';
+                    break;
+                } else {
+                    fprintf(stderr, "Grade is uncorrect\n");
+                    flag_grade = 0;
                     break;
                 }
             }
-            if (flag == 1) {
-                (*students)[(*count)++] = s;
-                print_student(&s);
+            if (flag_grade == 0 || index == 0) {
+                //fprintf(stderr, "Error of grade\n");
+                free(s.grades);
+                while ((ch = fgetc(file)) != '\n' && ch != EOF) {
+                    continue;
+                }
+                break;
             }
-        } else {
-            fprintf(stderr, "Ошибка чтения данных (получено: %d из 9). Пропуск записи.\n", result);
-            free(s.grades);
-            int ch;
-            while ((ch = fgetc(file)) != EOF && (ch != '\n')) {
+            
+            int grade = atoi(buffer);
+            if (grade < 0 || grade > 100) {
+                fprintf(stderr, "Grade2 is uncorrect\n");
+                free(s.grades);
+                while ((ch = fgetc(file)) != '\n' && ch != EOF) {
+                    continue;
+                }
+                flag_grade = 0;
+                break;
             }
+            s.grades[i] = (unsigned char)grade;
+            
+            while (ch == ' ' || ch == '\t') {
+                ch = fgetc(file);
+            }
+
+            if (ch == '\n' || ch == EOF) {
+                break;
+            }
+            
         }
+        if (flag_grade == 0) {
+            continue;
+        }
+        (*students)[(*count)++] = s;
+        print_student(&s);
         if (feof(file)) {
             break;
         }

@@ -22,3 +22,11 @@ Student: Jane Smitffffff, Group: CS101, Average Grade: 88.40
 Above Average (83.849998): 
 Student: John Doe, Group: CS101, Average Grade: 86.60
 Student: Jane Smitffffff, Group: CS101, Average Grade: 88.40
+Student: John Doe, Group: CS101, Average Grade: 89.60
+Above Average (83.679993): 
+Student: John Doe, Group: CS101, Average Grade: 89.60
+Student: Jane Smint, Group: CS181, Average Grade: 88.20
+Student: John Doe, Group: CS101, Average Grade: 89.60
+Above Average (84.549995): 
+Student: John Doe, Group: CS101, Average Grade: 89.60
+Student: Jane Smint, Group: CS181, Average Grade: 88.20
