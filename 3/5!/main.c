@@ -260,6 +260,7 @@ int read_students(const char *file_in, Student **students, int *count) {
         }
         
         int flag_grade = 1;
+        int grade_count = 0;
         for (int i = 0; i < NUM_EXAMS; ++i) {
             index = 0;
             buffer[0] = '\0';
@@ -292,7 +293,7 @@ int read_students(const char *file_in, Student **students, int *count) {
             }
             
             int grade = atoi(buffer);
-            if (grade < 0 || grade > 100) {
+            if ((grade < 0 || grade > 100) && flag_grade != 0) {
                 fprintf(stderr, "Grade2 is uncorrect\n");
                 free(s.grades);
                 while ((ch = fgetc(file)) != '\n' && ch != EOF) {
@@ -302,6 +303,7 @@ int read_students(const char *file_in, Student **students, int *count) {
                 break;
             }
             s.grades[i] = (unsigned char)grade;
+            grade_count++;
             
             while (ch == ' ' || ch == '\t') {
                 ch = fgetc(file);
@@ -311,6 +313,12 @@ int read_students(const char *file_in, Student **students, int *count) {
                 break;
             }
             
+        }
+        if ((grade_count < NUM_EXAMS) && flag_grade != 0) {
+            fprintf(stderr, "Not enough grades %u\n", s.id);
+            free(s.grades);
+            flag_grade = 0;
+            //continue;
         }
         if (flag_grade == 0) {
             continue;
