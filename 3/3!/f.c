@@ -4,6 +4,7 @@
 #include <limits.h>
 #include <unistd.h>
 #include <ctype.h>
+//не вывозит вещественную зарплату
 
 #define PATH_M 1024
 
@@ -54,8 +55,29 @@ int isValidName(const char* name) {
     return 1;
 }
 
-int isValidMoney(double money) {
-    return money >= 0;
+int isValidid(const char *id) {
+    for (int i = 0; id[i] != '\0'; i++) {
+        if (!isdigit(id[i])) {
+            return 0;
+        }
+    }
+    return 1;
+}
+
+int isValidMoney(const char *id) {
+    int has_dem_point = 0;
+
+    for (int i = 0; id[i] != '\0'; i++) {
+        if (id[i] == '.') {
+            if(has_dem_point) {
+                return 0;
+            }
+            has_dem_point = 1;
+        }else if (!isdigit(id[i])) {
+            return 0;
+        }
+    }
+    return 1;
 }
 
 int compar_emp(const void *a, const void *b) { 
@@ -89,12 +111,19 @@ int readEmployees(const char *inputPath, Employee **employees, int *count) {
     *employees = NULL;
 
     Employee tempEmp;
-    while (fscanf(file, "%u %49s %49s %lf", &tempEmp.id, tempEmp.firstName, tempEmp.lastName, 
-                  &tempEmp.salary) == 4) {
-        if (isdigit(tempEmp.salary) || isValidMoney(tempEmp.salary) == 0 || isValidMoney(tempEmp.id) == 0 || isValidName(tempEmp.firstName) == 0 || isValidName(tempEmp.lastName) == 0){
-            fprintf(stderr, "One more mistake in %d\n", tempEmp.id);
+    char id[50];
+    char salary[50];
+    while (fscanf(file, "%49s %49s %49s %49s", id, tempEmp.firstName, tempEmp.lastName, 
+                  salary) == 4) {
+        
+        if (isValidid(id) == 0 || isValidMoney(salary) == 0 || isValidName(tempEmp.firstName) == 0 || isValidName(tempEmp.lastName) == 0){
+            fprintf(stderr, "One more mistake in %s\n", id);
             continue;
         }
+        tempEmp.id = (unsigned int)strtoul(id, NULL, 10);
+        tempEmp.salary = (double)strtoul(salary, NULL, 10);
+
+
         Employee *temp = realloc(*employees, (*count + 1) * sizeof(Employee));
         if (!temp) {
             fprintf(stderr, "Memory realloc failed\n");
@@ -160,7 +189,7 @@ int main(int argc, char** argv) {
     char output[PATH_M];
 
     if (argc != 4) {
-        fprintf(stderr, "We need more args\n");
+        fprintf(stderr, "We need more args ./a.out -flag <file> <file>\n");
         return 1;
     }
 

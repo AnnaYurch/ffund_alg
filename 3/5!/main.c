@@ -9,7 +9,7 @@
 #define MAX_LEN_GR 10
 #define NUM_EXAMS 5
 
-//101 Alice Brown CS16 75(пробел) не обрабатывает
+//я id то чекаю?
 typedef struct Student {
     unsigned int id;
     char name[MAX_LEN_NAME];
@@ -108,7 +108,7 @@ int read_students(const char *file_in, Student **students, int *count) {
             } else if (ch == ' ' || ch == '\t') {
                 break;
             } else {
-                fprintf(stderr, "ID is uncorrect. ");
+                fprintf(stderr, "ID is incorrect. ");
                 flag_id = 0;
                 while ((ch = fgetc(file)) != '\n' && ch != EOF) {
                     continue;

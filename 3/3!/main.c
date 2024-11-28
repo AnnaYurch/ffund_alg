@@ -7,11 +7,12 @@
 //не вывозит вещественную зарплату
 
 #define PATH_M 1024
+#define MAX_LEN_NAME 50
 
 typedef struct Employee {
     unsigned int id;
-    char firstName[50];
-    char lastName[50];
+    char firstName[MAX_LEN_NAME];
+    char lastName[MAX_LEN_NAME];
     double salary;
 } Employee;
 
@@ -55,14 +56,6 @@ int isValidName(const char* name) {
     return 1;
 }
 
-int isValidid(const char *id) {
-    for (int i = 0; id[i] != '\0'; i++) {
-        if (!isdigit(id[i])) {
-            return 0;
-        }
-    }
-    return 1;
-}
 
 int isValidMoney(const char *id) {
     int has_dem_point = 0;
@@ -98,42 +91,203 @@ int compar_emp(const void *a, const void *b) {
     return (empA->id > empB->id) ? 1 : -1;
 }
 
-int readEmployees(const char *inputPath, Employee **employees, int *count) {
-    FILE *file = fopen(inputPath, "r");
+int readEmployees(const char *file_in, Employee **employees, int *count) {
+    FILE *file = fopen(file_in, "r");
     if (!file) {
-        fprintf(stderr, "Trouble with file\n");
-        *employees = NULL;
-        *count = 0;
+        fprintf(stderr, "Could not open file %s\n", file_in);
         return 1;
     }
 
     *count = 0;
-    *employees = NULL;
+    int capacity = 10;
+    *employees = malloc(capacity * sizeof(Employee));
+    if (*employees == NULL) {
+        fprintf(stderr, "Memory yps1\n");
+        fclose(file);
+        return 1;
+    }
 
-    Employee tempEmp;
-    char id[50];
-    char salary[50];
-    while (fscanf(file, "%49s %49s %49s %49s", id, tempEmp.firstName, tempEmp.lastName, 
-                  salary) == 4) {
-        
-        if (isValidid(id) == 0 || isValidMoney(salary) == 0 || isValidName(tempEmp.firstName) == 0 || isValidName(tempEmp.lastName) == 0){
-            fprintf(stderr, "One more mistake in %s\n", id);
+    while (1) {
+        if (*count >= capacity) {
+            capacity *= 2;
+            Employee *temp = realloc(*employees, capacity * sizeof(Employee));
+            if (temp == NULL) {
+                fprintf(stderr, "Memory yps2\n");
+                free(*employees);
+                fclose(file);
+                return 0;
+            }
+            *employees = temp;
+        }
+
+        Employee emp;
+        char buffer[MAX_LEN_NAME];
+        int index = 0;
+        int ch;
+
+        //считываем ID
+        int flag_id = 1; 
+        while ((ch = fgetc(file)) != EOF && ch != ' ' && ch != '\n') {
+            if (isdigit(ch)) {
+                if (index < sizeof(buffer) - 1) {
+                    buffer[index++] = ch;
+                } else {
+                    fprintf(stderr, "ID is too long. ");
+                    while ((ch = fgetc(file)) != '\n' && ch != EOF) {};
+                    break;
+                }
+            } else {
+                fprintf(stderr, "Invalid character in ID. ");
+                flag_id = 0;
+                while ((ch = fgetc(file)) != '\n' && ch != EOF);
+                break;
+            }
+        }
+
+        if (ch == '\n') {
+            fprintf(stderr, "Uncorrect student\n");
             continue;
         }
-        tempEmp.id = (unsigned int)strtoul(id, NULL, 10);
-        tempEmp.salary = (double)strtoul(salary, NULL, 10);
 
+        buffer[index] = '\0';
+        emp.id = atoi(buffer);
 
-        Employee *temp = realloc(*employees, (*count + 1) * sizeof(Employee));
-        if (!temp) {
-            fprintf(stderr, "Memory realloc failed\n");
-            free(*employees);
-            fclose(file);
-            return 1;
+        int flag = 1;
+        for (int i = 0; i < *count; ++i) {
+            if ((*employees)[i].id == emp.id) {
+                flag = 0;
+                fprintf(stderr, "Такой id (%u) студента уже есть\n", emp.id);
+                break;
+            }
         }
-        *employees = temp;
-        (*employees)[*count] = tempEmp;
-        (*count)++;
+        
+        if (flag == 0) {
+            while ((ch = fgetc(file)) != '\n' && ch != EOF) {
+                continue;
+            }
+            continue;
+        }
+
+        while (ch == ' ') {
+            ch = fgetc(file);
+        }
+        
+
+        //считываем имя
+        index = 0;
+        int flag_name = 1;
+        while (ch != EOF && ch != ' ' && ch != '\n') {
+            if (index < sizeof(emp.firstName) - 1) {
+                emp.firstName[index++] = ch;
+            } else {
+                fprintf(stderr, "First name is too long. ");
+                flag_name = 0;
+                while ((ch = fgetc(file)) != '\n' && ch != EOF);
+                break;
+            }
+            ch = fgetc(file);
+        }
+
+        if (ch == '\n') {
+            fprintf(stderr, "Uncorrect student2\n");
+            continue;
+        }
+
+        emp.firstName[index] = '\0';
+        if (!isValidName(emp.firstName) && flag_name != 0) {
+            fprintf(stderr, "Uncorrect name. ");
+            while ((ch = fgetc(file)) != '\n' && ch != EOF) {}
+        }
+
+        if (ch == '\n') {
+            fprintf(stderr, "Uncorrect student22\n");
+            continue;
+        }
+
+        while (ch == ' ') {
+            ch = fgetc(file);
+        }
+
+        //считываем фамилию
+        int flag_surname = 1;
+        index = 0;
+        while (ch != EOF && ch != ' ' && ch != '\n') {
+            if (index < sizeof(emp.lastName) - 1) {
+                emp.lastName[index++] = ch;
+            } else {
+                fprintf(stderr, "Last name is too long. ");
+                flag_surname = 0;
+                while ((ch = fgetc(file)) != '\n' && ch != EOF);
+                break;
+            }
+            ch = fgetc(file);
+        }
+
+        if (ch == '\n') {
+            fprintf(stderr, "Uncorrect student3\n");
+            continue;
+        }
+
+        emp.lastName[index] = '\0';
+
+        if (!isValidName(emp.lastName) && flag_surname != 0) {
+            fprintf(stderr, "Uncorrect surname. ");
+            while ((ch = fgetc(file)) != '\n' && ch != EOF) {}
+        }
+
+        if (ch == '\n') {
+            fprintf(stderr, "Uncorrect student33\n");
+            continue;
+        }
+
+        while (ch == ' ') {
+            ch = fgetc(file);
+        }
+
+        //считываем зарплату
+        index = 0;
+        int flag_salary = 1;
+        while (ch != EOF && ch != ' ' && ch != '\n') {
+            if (isdigit(ch) || ch == '.') {
+                if (index < sizeof(buffer) - 1) {
+                    buffer[index++] = ch;
+                } else {
+                    fprintf(stderr, "Salary is too long. ");
+                    flag_salary = 0;
+                    while ((ch = fgetc(file)) != '\n' && ch != EOF) {};
+                    break;
+                }
+            } else {
+                fprintf(stderr, "Invalid character in salary. ");
+                flag_salary = 0;
+                while ((ch = fgetc(file)) != '\n' && ch != EOF);
+                break;
+            }
+            
+            ch = fgetc(file);
+        }
+
+        buffer[index] = '\0';
+
+        //валидность
+        if (isValidMoney(buffer) == 0 || flag_salary == 0) {
+            fprintf(stderr, "Incorrect salary\n");
+            while ((ch = fgetc(file)) != '\n' && ch != EOF) {}
+            continue;
+        }
+        emp.salary = atof(buffer);
+
+        if (index == 0) {
+            fprintf(stderr, "Invalid salary format\n");
+            continue;
+        }
+
+        printf("%u\n", emp.id);
+        (*employees)[(*count)++] = emp;
+
+        if (ch == EOF) {
+            break;
+        }
     }
 
     fclose(file);
@@ -160,7 +314,7 @@ void HandlerOptA(const char *inputPath, const char *outputPath) {
     int count;
 
     if (readEmployees(inputPath, &employees, &count) != 0) {
-        fprintf(stderr, "Failed to read emp\n");
+        fprintf(stderr, "Failed with reading emp\n");
         return;
     }
     qsort(employees, count, sizeof(Employee), compar_emp);
@@ -189,7 +343,7 @@ int main(int argc, char** argv) {
     char output[PATH_M];
 
     if (argc != 4) {
-        fprintf(stderr, "We need more args\n");
+        fprintf(stderr, "We need more args ./a.out -flag <file> <file>\n");
         return 1;
     }
 
