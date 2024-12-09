@@ -2,6 +2,11 @@
 #include <ctype.h>
 #include <stdlib.h>
 
+typedef enum Errors {
+    INVALID_MEMORY,
+    OK
+} Errors;
+
 typedef enum kOpts {
     OPT_L,
     OPT_R,
@@ -48,8 +53,6 @@ int my_atoi(const char* str) {
     if (str[i] == '-') {
         sign = -1;
         i++;
-    } else if (str[i] == '+') {
-        i++;
     }
 
     while (str[i] >= '0' && str[i] <= '9') {
@@ -60,27 +63,21 @@ int my_atoi(const char* str) {
     return result * sign;
 }
 
-char* my_strcat(char *str1, char *str2) {
+enum Errors my_strcat(char *str1, const char *str2, char **result) {
     int len_1 = my_strlen(str1);
     int len_2 = my_strlen(str2);
-
-    char *res = (char *)malloc(sizeof(len_1 + len_2 + 1));
-    if (res == NULL) {
-        fprintf(stderr, "Memory yps!\n");
-        return NULL;
+    *result = (char *)malloc(len_1 + len_2 + 1);
+    if (*result == NULL) {
+        return INVALID_MEMORY;
     }
-
     for (int i = 0; i < len_1; i++) {
-        res[i] = str1[i];
+        (*result)[i] = str1[i];
     }
-
     for (int i = 0; i < len_2; i++) {
-        res[len_1 + i] = str2[i];
+        (*result)[len_1 + i] = str2[i];
     }
-
-    str1[len_1 + len_2] = '\0';
-
-    return res;
+    (*result)[len_1 + len_2] = '\0';
+    return OK;
 }
 
 kOpts GetOptionFromArgs(char* flag) {
@@ -103,88 +100,92 @@ kOpts GetOptionFromArgs(char* flag) {
     return OPT_UNKNOWN;
 }
 
-int HandlerOptL(const char *str) {
-    return my_strlen(str);
-}
-
-char* HandlerOptR(char *str) {
-    int count = my_strlen(str);
-    int start = 0;
-    int end = count - 1;
-    while(start < end) {
-        char tmp = str[start];
-        str[start] = str[end];
-        str[end] = tmp;
-
-        start++;
-        end--;
-    }
-
-    return str;
-}
-
-char* HandlerOptU(char *str) {
-    int start = 0;
-    while(start < my_strlen(str)) {
-        if (start % 2 == 0 ) {
-            str[start] = toupper(str[start]);
-        }
-        start++;
-    }
-    return str;
-}
-
-char* HandlerOptN(const char *str) {
+Errors HandlerOptR(const char *str, char **new_str) {
     int len = my_strlen(str);
+    char *temp = (char*)malloc((len + 1) * sizeof(char));
+    if (temp == NULL) {
+        return INVALID_MEMORY;
+    }
 
+    for (int i = 0; i < len; i++) {
+        (temp)[i] = str[len - 1 - i];
+    }
+    (temp)[len] = '\0';
+
+    *new_str = temp;
+    return OK;
+}
+
+enum Errors HandlerOptU(char *str, char **result) {
+    int len = my_strlen(str);
+    char *temp = (char *)malloc(len + 1);
+    if (temp == NULL) {
+        return INVALID_MEMORY;
+    }
+    for (int i = 0; i < len; i++) {
+        if (i % 2 == 0) {
+            (temp)[i] = toupper(str[i]);
+        } else {
+            (temp)[i] = str[i];
+        }
+    }
+    (temp)[len] = '\0';
+    *result = temp;
+    return OK;
+}
+
+enum Errors HandlerOptN(const char *str, char **result) {
+    int len = my_strlen(str);
     char *ar_digit = (char*)malloc(len + 1);
     char *ar_let = (char*)malloc(len + 1);
     char *ar_muut = (char*)malloc(len + 1);
 
     if (ar_digit == NULL || ar_let == NULL || ar_muut == NULL) {
-        printf("Memory yps2!\n");
-        return NULL;
+        return INVALID_MEMORY;
     }
 
     int digit_i = 0, let_i = 0, muut_i = 0;
-    int start = 0;
-
-    while (start < len) {
-        if (isdigit(str[start])) {
-            ar_digit[digit_i++] = str[start];
-        } else if (isalpha(str[start])) {
-            ar_let[let_i++] = str[start];
+    for (int i = 0; i < len; i++) {
+        if (isdigit(str[i])) {
+            ar_digit[digit_i++] = str[i];
+        } else if (isalpha(str[i])) {
+            ar_let[let_i++] = str[i];
         } else {
-            ar_muut[muut_i++] = str[start];
+            ar_muut[muut_i++] = str[i];
         }
-        start++;
     }
-
     ar_digit[digit_i] = '\0';
     ar_let[let_i] = '\0';
     ar_muut[muut_i] = '\0';
 
-    char *final_result = my_strcat(my_strcat(ar_digit, ar_let), ar_muut);
-
+    enum Errors err = my_strcat(ar_digit, ar_let, result);
+    if (err != OK) {
+        free(ar_digit);
+        free(ar_let);
+        free(ar_muut);
+        return err;
+    }
+    char *temp_result = *result;
+    err = my_strcat(temp_result, ar_muut, result);
     free(ar_digit);
     free(ar_let);
     free(ar_muut);
-    
-    return final_result;
+    free(temp_result);
+    return err;
 }
 
-char* HandlerOptC(int argc, char *argv[], int seed) {
+enum Errors HandlerOptC(int argc, char *argv[], int seed, char **result) {
     int count = argc;
     char **new_strs = (char **)malloc(count * sizeof(char *));
+
     if (new_strs == NULL) {
-        printf("Memory yps3");
-        return NULL;
+        return INVALID_MEMORY;
     }
-    
+
     for (int i = 0; i < count; i++) {
         new_strs[i] = argv[i];
     }
- 
+
     srand(seed);
 
     for (int i = count - 1; i > 0; i--) {
@@ -194,46 +195,46 @@ char* HandlerOptC(int argc, char *argv[], int seed) {
         new_strs[j] = temp;
     }
 
-    char *result = (char *)malloc(1);
-    if (result == NULL) {
-        printf("Memory yps4");
+    char *temp = (char *)malloc(1);
+    if (temp == NULL) {
         free(new_strs);
-        return NULL;
+        return INVALID_MEMORY;
     }
-    
-    result[0] = '\0';
+    temp[0] = '\0';
 
     for (int i = 0; i < count; i++) {
-        char *new_res = my_strcat(result, new_strs[i]);
-        if (new_res == NULL) {
-            printf("Memory yps5");
-            free(result);
-            free(new_res);
-            return NULL;
-        } 
-        free(result);
-        result = new_res;
+        char *new_res;
+        Errors err = my_strcat(temp, new_strs[i], &new_res);
+        if (err != OK) {
+            free(temp);
+            free(new_strs);
+            return err;
+        }
+        free(temp);
+        temp = new_res;
     }
-    
+    *result = temp;
     free(new_strs);
-    return result;
+    return OK;
 }
 
 int main(int argc, char* argv[]) {
     if (argc < 3) {
-        printf("Error: Not enough arguments.\n");
+        printf("Error: Not enough arguments (./a.out -flag str)\n");
         return 1;
     }
+
     kOpts opt = GetOptionFromArgs(argv[1]);
     char *x = argv[2];
-    
+    char *result;
+    Errors err;
     switch (opt) {
         case OPT_L:
             if (argc != 3) {
                 printf("Error: Not enough arguments.\n");
                 return 1;
             }
-            int n = HandlerOptL(x);
+            int n = my_strlen(x);
             printf("%d\n", n);
             break;
         case OPT_R:
@@ -241,25 +242,49 @@ int main(int argc, char* argv[]) {
                 printf("Error: Not enough arguments.\n");
                 return 1;
             }
-            printf("%s\n", HandlerOptR(x));
+
+            char *reverse_str;
+            err = HandlerOptR(x, &reverse_str);
+            if (err == INVALID_MEMORY) {
+                printf("Problems with memory\n");
+                break;
+            } else {
+                printf("%s\n", reverse_str);
+                free(reverse_str);
+            }
+            
             break;
         case OPT_U:
             if (argc != 3) {
                 printf("Error: Not enough arguments.\n");
                 return 1;
             }
-            printf("%s\n", HandlerOptU(x));
+            result;
+            err = HandlerOptU(x, &result);
+            if (err == INVALID_MEMORY) {
+                printf("Problems with memory\n");
+                break;
+            } else {
+                printf("%s\n", result);
+                free(result);
+            }
+            
             break;
         case OPT_N:
             if (argc != 3) {
                 printf("Error: Not enough arguments.\n");
                 return 1;
             }
-            char *result = HandlerOptN(x);
-            if (result != NULL) {
+            result;
+            Errors err = HandlerOptN(x, &result);
+            if (err == INVALID_MEMORY) {
+                printf("Problems with memory\n");
+                break;
+            } else {
                 printf("%s\n", result);
                 free(result);
             }
+            
             break;
         case OPT_C:
             if (argc < 4) {
@@ -271,10 +296,14 @@ int main(int argc, char* argv[]) {
                 return 1;
             }
             int seed = my_atoi(argv[2]);
-            char *res = HandlerOptC(argc - 3, argv + 3, seed);
-            if (res != NULL) {
-                printf("%s\n", res);
-                free(res);
+            char *result;
+            err = HandlerOptC(argc - 3, argv + 3, seed, &result);
+            if (err == INVALID_MEMORY) {
+                printf("Problems with memory\n");
+                break;
+            } else {
+                printf("%s\n", result);
+                free(result);
             }
             break;
         default:
