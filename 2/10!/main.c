@@ -43,7 +43,7 @@ Errors polinomial_decomposition(double eps, double a, double **arr, int n, ...) 
     if (arr == NULL || eps <= 0) {
         return INVALID_ARG;
     }
-    //еще параметры чекнуть
+
     double *temp = (double*)malloc(sizeof(double) * (n + 1));
     if (temp == NULL) {
         return INVALID_MEMORY;
