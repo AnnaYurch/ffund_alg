@@ -3,6 +3,8 @@
 #include <stdlib.h>
 #include <string.h>
 
+
+//если в строке /n не работает
 typedef enum Errors {
     INVALID_MEMORY,
     INVALID_ARG,
@@ -14,8 +16,9 @@ Errors add_to_ans_file(char **result, size_t *capacity, const char *name_of_file
     if (*result == NULL) {
         return INVALID_ARG;
     } 
+    char text[] = "\n";
 
-    size_t new_size = *capacity + strlen(name_of_file) + 15;
+    size_t new_size = *capacity + strlen(name_of_file) + strlen(text) * 2;
     char *temp = (char*)realloc(*result, new_size);
     if (temp == NULL) {
         return INVALID_MEMORY;
@@ -23,7 +26,7 @@ Errors add_to_ans_file(char **result, size_t *capacity, const char *name_of_file
     *result = temp;
     *capacity = new_size;
 
-    char text[] = "\n";
+    
     strcat(*result, text);
     strcat(*result, text);
     strcat(*result, name_of_file);
@@ -41,16 +44,16 @@ Errors add_to_ans(char **result, size_t *capacity, int line_of_file, int pos_of_
     char itoa_line[12];
     char itoa_pos[12];
 
-    size_t new_size = *capacity + strlen(text1) + strlen(text2) + strlen(itoa_line) + strlen(itoa_pos) + 30;
+    sprintf(itoa_line, "%d", line_of_file);
+    sprintf(itoa_pos, "%d", pos_of_str);
+
+    size_t new_size = *capacity + strlen(text1) + strlen(text2) + strlen(itoa_line) + strlen(itoa_pos);
     char *temp = (char*)realloc(*result, new_size);
     if (temp == NULL) {
         return INVALID_MEMORY;
     }
     *result = temp;
     *capacity = new_size;
-
-    sprintf(itoa_line, "%d", line_of_file);
-    sprintf(itoa_pos, "%d", pos_of_str);
 
     strcat(*result, text1);
     strcat(*result, itoa_line);
@@ -71,10 +74,12 @@ Errors search_str_in_this_file(FILE *file, size_t *capacity, const char *str, ch
     int pos_of_str = 0; //текущая позиция в строке
     int index = 0; //индекс для прохода по строке
     int ans_pos = 0; //позиция откуда начинает строка совпадать
+    int tab = '\t';
 
-    while ((c = getc(file)) != EOF) {
+    while ((c = getc(file)) != EOF) {  
         pos_of_str++;
         if (c == '\n') {
+            
             line_of_file++;
             pos_of_str = 0;
             index = 0;
@@ -149,8 +154,11 @@ int main() {
         printf("Memory allocation failed\n");
         return 1;
     }
+
+    result[0] = '\0';
     int amount_of_file = 3;
-    const char *str = "eww";
+    const char *str = "ab\nab";
+    //printf("%sa", str);
     size_t capacity = 1;
 
     Errors err = is_str_in_files(&result, &capacity, amount_of_file, str, "t1.txt", "t2.txt", "t3.txt");

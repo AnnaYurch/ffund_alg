@@ -79,7 +79,6 @@ Errors polinomial_decomposition(double eps, double a, double **arr, int n, ...) 
             free(*arr);
             return err;
         }
-
         
         (*arr)[i] = gg / fact;
         if (i > 0 && fabs((*arr)[i] - prev_val) < eps) {
@@ -103,11 +102,11 @@ Errors polinomial_decomposition(double eps, double a, double **arr, int n, ...) 
 
 int main() {
     double eps = 0.00001;
-    double a = 2;
+    double a = 3;
     double *arr;
-    int n = 3;
+    int n = 4;
 
-    Errors err = polinomial_decomposition(eps, a, &arr, n, 5.0, 0.5, -0.3, 1.0);
+    Errors err = polinomial_decomposition(eps, a, &arr, n, -2.0, 1.0, -3.0, 0.0, 1.0);
     if (err == INVALID_MEMORY) {
         printf("Problems with memory\n");
     } else if(err == INVALID_ARG) {

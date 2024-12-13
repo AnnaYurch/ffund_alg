@@ -291,7 +291,7 @@ int main(int argc, char* argv[]) {
                 printf("Error: Not enough arguments.\n");
                 return 1;
             }
-            if (is_seed(argv[2]) == 0) {
+            if (is_seed(2[argv]) == 0) {
                 printf("Error: seed is not int number.\n");
                 return 1;
             }

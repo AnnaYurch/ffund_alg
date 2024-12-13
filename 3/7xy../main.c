@@ -3,7 +3,6 @@
 #include <string.h>
 #include <ctype.h>
 
-//не хочет последнего удалять
 #define MAX_NAME_LEN 80
 #define MAX_DATE_LEN 11 // dd-mm-yyyy
 #define MAX_UNDO 100

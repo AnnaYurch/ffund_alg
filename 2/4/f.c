@@ -1,3 +1,14 @@
+    Для каждой последовательной тройки точек (A, B, C) вычисляем векторное произведение векторов AB и BC. 
+    Знак этого произведения указывает на направление поворота:
+        Если векторное произведение положительное, значит, поворот против часовой стрелки.
+        Если векторное произведение отрицательное, значит, поворот по часовой стрелке.
+        Если векторное произведение равно нулю, значит, точки A, B и C коллинеарны.
+
+    Проверка знаков: Если все векторные произведения имеют одинаковый знак (все положительные или 
+    все отрицательные), многоугольник выпуклый. Если есть как положительные, так и отрицательные, 
+    многоугольник вогнутый.
+
+
 #include <stdio.h>
 #include <stdarg.h>
 #include <stdlib.h>
@@ -22,25 +33,18 @@ Errors is_convex(int *result, int num_vertices, ...) {
     va_list args;
     va_start(args, num_vertices);
 
-    double x[num_vertices], y[num_vertices];
-
-    for (int i = 0; i < num_vertices; i++) {
-        x[i] = va_arg(args, double);
-        y[i] = va_arg(args, double);
-    }
-    va_end(args);
-
+    double x1, y1, x2, y2, x3, y3;
     int sign = 0;
 
     for (int i = 0; i < num_vertices; i++) {
-        double current_vector_product = vector_product(
-            x[i],
-            y[i],
-            x[(i + 1) % num_vertices],
-            y[(i + 1) % num_vertices],
-            x[(i + 2) % num_vertices],
-            y[(i + 2) % num_vertices]
-        );
+        x1 = va_arg(args, double);
+        y1 = va_arg(args, double);
+        x2 = va_arg(args, double);
+        y2 = va_arg(args, double);
+        x3 = va_arg(args, double);
+        y3 = va_arg(args, double);
+
+        double current_vector_product = vector_product(x1, y1, x2, y2, x3, y3);
 
         if (current_vector_product != 0) {
             if (sign == 0) {
@@ -53,10 +57,13 @@ Errors is_convex(int *result, int num_vertices, ...) {
             }
             else if ((current_vector_product > 0 && sign < 0) || (current_vector_product < 0 && sign > 0)) {
                 *result = 0;
+                va_end(args);
                 return OK;
             }
         }
     }
+
+    va_end(args);
     *result = 1;
     return OK;
 }

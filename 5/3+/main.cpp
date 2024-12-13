@@ -29,7 +29,7 @@ class logical_values_array {
         }
 
         logical_values_array implication(const logical_values_array &other) const {
-            return logical_values_array((*this).inversion().disjunction(other));
+            return logical_values_array(inversion().disjunction(other));
         }
 
         logical_values_array coimplication(const logical_values_array &other) const {
