@@ -9,7 +9,7 @@
 #define MAX_LEN_GR 10
 #define NUM_EXAMS 5
 
-//101 Alice Brown CS16 75(пробел) не обрабатывает
+//я id то чекаю?
 typedef struct Student {
     unsigned int id;
     char name[MAX_LEN_NAME];
@@ -87,7 +87,7 @@ int read_students(const char *file_in, Student **students, int *count) {
         }
 
         Student s;
-        char buffer[100] = {0};
+        char buffer[10] = {0};
         int index = 0;
         int ch;
 
@@ -108,7 +108,7 @@ int read_students(const char *file_in, Student **students, int *count) {
             } else if (ch == ' ' || ch == '\t') {
                 break;
             } else {
-                fprintf(stderr, "ID is uncorrect. ");
+                fprintf(stderr, "ID is incorrect. ");
                 flag_id = 0;
                 while ((ch = fgetc(file)) != '\n' && ch != EOF) {
                     continue;
@@ -118,7 +118,7 @@ int read_students(const char *file_in, Student **students, int *count) {
         }
 
         if (ch == '\n') {
-            fprintf(stderr, "Uncorrect student\n");
+            fprintf(stderr, "Incorrect student\n");
             continue;
         }
 
@@ -160,20 +160,20 @@ int read_students(const char *file_in, Student **students, int *count) {
         }
 
         if (ch == '\n') {
-            fprintf(stderr, "Uncorrect student2\n");
+            fprintf(stderr, "Incorrect student2\n");
             continue;
         }
 
         s.name[index] = '\0';
         if (!isValidName(s.name) && flag_name != 0) {
-            fprintf(stderr, "Uncorrect name. ");
+            fprintf(stderr, "Incorrect name. ");
             while ((ch = fgetc(file)) != '\n' && ch != EOF) {
                 continue;
             }
         }
 
         if (ch == '\n') {
-            fprintf(stderr, "Uncorrect student22\n");
+            fprintf(stderr, "Incorrect student22\n");
             continue;
         }
 
@@ -198,20 +198,20 @@ int read_students(const char *file_in, Student **students, int *count) {
             ch = fgetc(file);
         }
         if (ch == '\n') {
-            fprintf(stderr, "Uncorrect student3\n");
+            fprintf(stderr, "Incorrect student3\n");
             continue;
         }
 
         s.surname[index] = '\0';
         if (!isValidName(s.surname) && flag_surname != 0) {
-            fprintf(stderr, "Uncorrect surname. ");
+            fprintf(stderr, "Incorrect surname. ");
             while ((ch = fgetc(file)) != '\n' && ch != EOF) {
                 continue;
             }
         }
 
         if (ch == '\n') {
-            fprintf(stderr, "Uncorrect student33\n");
+            fprintf(stderr, "Incorrect student33\n");
             continue;
         }
 
@@ -235,7 +235,7 @@ int read_students(const char *file_in, Student **students, int *count) {
         }
 
         if (ch == '\n') {
-            fprintf(stderr, "Uncorrect student4\n");
+            fprintf(stderr, "Incorrect student4\n");
             continue;
         }
 
@@ -246,7 +246,7 @@ int read_students(const char *file_in, Student **students, int *count) {
         }
 
         if (ch == '\n') {
-            fprintf(stderr, "Uncorrect student5\n");
+            fprintf(stderr, "Incorrect student5\n");
             continue;
         }
 
@@ -260,6 +260,7 @@ int read_students(const char *file_in, Student **students, int *count) {
         }
         
         int flag_grade = 1;
+        int grade_count = 0;
         for (int i = 0; i < NUM_EXAMS; ++i) {
             index = 0;
             buffer[0] = '\0';
@@ -277,7 +278,7 @@ int read_students(const char *file_in, Student **students, int *count) {
                     buffer[index] = '\0';
                     break;
                 } else {
-                    fprintf(stderr, "Grade is uncorrect\n");
+                    fprintf(stderr, "Grade is incorrect\n");
                     flag_grade = 0;
                     break;
                 }
@@ -292,8 +293,8 @@ int read_students(const char *file_in, Student **students, int *count) {
             }
             
             int grade = atoi(buffer);
-            if (grade < 0 || grade > 100) {
-                fprintf(stderr, "Grade2 is uncorrect\n");
+            if ((grade < 0 || grade > 100) && flag_grade != 0) {
+                fprintf(stderr, "Grade2 is incorrect\n");
                 free(s.grades);
                 while ((ch = fgetc(file)) != '\n' && ch != EOF) {
                     continue;
@@ -302,6 +303,7 @@ int read_students(const char *file_in, Student **students, int *count) {
                 break;
             }
             s.grades[i] = (unsigned char)grade;
+            grade_count++;
             
             while (ch == ' ' || ch == '\t') {
                 ch = fgetc(file);
@@ -311,6 +313,12 @@ int read_students(const char *file_in, Student **students, int *count) {
                 break;
             }
             
+        }
+        if ((grade_count < NUM_EXAMS) && flag_grade != 0) {
+            fprintf(stderr, "Not enough grades %u\n", s.id);
+            free(s.grades);
+            flag_grade = 0;
+            //continue;
         }
         if (flag_grade == 0) {
             continue;
@@ -401,7 +409,7 @@ float average_grade_all(Student *students, int count) {
 void trace_student(const char *trace_filename, const Student *student) {
     FILE *file = fopen(trace_filename, "a");
     if (file) {
-        fprintf(file, "Student: %s %s, Group: %s, Average Grade: %.2f\n", student->name, student->surname, student->group, average_grade(student));
+        fprintf(file, "Student: %s %s, Group: %s, Average Grade: %f\n", student->name, student->surname, student->group, average_grade(student));
         fclose(file);
     } else {
         perror("Unable to open trace file");
@@ -414,7 +422,7 @@ void trace_above_average(const char *trace_filename, Student *students, int coun
         fprintf(file, "Above Average (%f): \n", avg);
         for (int i = 0; i < count; i++) {
             if (average_grade(&students[i]) > avg) {   
-                fprintf(file, "Student: %s %s, Group: %s, Average Grade: %.2f\n", (&students[i])->name, (&students[i])->surname, (&students[i])->group, average_grade((&students[i])));
+                fprintf(file, "Student: %s %s, Group: %s, Average Grade: %f\n", (&students[i])->name, (&students[i])->surname, (&students[i])->group, average_grade((&students[i])));
             }
         }
         fclose(file);

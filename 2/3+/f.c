@@ -162,7 +162,7 @@ int main() {
 
     result[0] = '\0';
     int amount_of_file = 3;
-    const char *str = "eww";
+    const char *str = "3\n\n3";
     //printf("%sa", str);
     size_t capacity = 1;
 

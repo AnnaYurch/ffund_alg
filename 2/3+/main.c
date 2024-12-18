@@ -1,10 +1,11 @@
+
+//////////////
 #include <stdio.h>
 #include <stdarg.h>
 #include <stdlib.h>
 #include <string.h>
 
 
-//если в строке /n не работает
 typedef enum Errors {
     INVALID_MEMORY,
     INVALID_ARG,
@@ -71,30 +72,49 @@ Errors search_str_in_this_file(FILE *file, size_t *capacity, const char *str, ch
     
     int c; //текущий символ
     int line_of_file = 1; //текущая строка
+    int ans_line_of_file = 1;
     int pos_of_str = 0; //текущая позиция в строке
     int index = 0; //индекс для прохода по строке
     int ans_pos = 0; //позиция откуда начинает строка совпадать
-    int tab = '\t';
+    int count_of_n = 0;
 
     while ((c = getc(file)) != EOF) {  
         pos_of_str++;
-        if (c == '\n') {
-            
-            line_of_file++;
-            pos_of_str = 0;
-            index = 0;
-        }
+        
         if (c == str[index]) {
+            
             index++;
             if (index == 1) {
                 ans_pos = pos_of_str;
-            } 
-            if (index == str_len) {
-                Errors err = add_to_ans(result, capacity, line_of_file, ans_pos);
+                ans_line_of_file = line_of_file;
+                if (c == '\n') { //что если "\n"
+                    count_of_n++;
+                    line_of_file++;
+                    pos_of_str = 0;
+                }
+            } else if (c == '\n') { //что если "\n"
+                count_of_n++;
+                line_of_file++;
+                pos_of_str = 0;
+            }
+            if (c == '\n' && str_len == 1) {
+                Errors err = add_to_ans(result, capacity, ans_line_of_file, ans_pos);
                 if (err != OK) {
                     return err;
                 }
                 index = 0;
+                fseek(file, -index, SEEK_CUR);
+                pos_of_str -= (index); 
+            }
+            if (index == str_len) {
+                Errors err = add_to_ans(result, capacity, ans_line_of_file, ans_pos);
+                if (err != OK) {
+                    return err;
+                }
+                index = 0;
+                fseek(file, -index - 1, SEEK_CUR);
+                pos_of_str -= (index + 1); 
+                //line_of_file -= count_of_n;
             }
         } else if (index > 0) {
             //обнуляем все
@@ -102,8 +122,13 @@ Errors search_str_in_this_file(FILE *file, size_t *capacity, const char *str, ch
             pos_of_str -= (index);
             ans_pos = 0;
             index = 0;
+            line_of_file = ans_line_of_file;
             
-        } 
+        } else if (c == '\n') {
+            line_of_file++;
+            pos_of_str = 0;
+            index = 0;
+        }
     }
 
     return OK;
@@ -149,6 +174,7 @@ Errors is_str_in_files(char **result, size_t *capacity, int amount_of_file, cons
 }
 
 int main() {
+    //printf("%ld\n", strlen("\n") );
     char *result = (char*)malloc(1);
     if (result == NULL) {
         printf("Memory allocation failed\n");
@@ -157,7 +183,7 @@ int main() {
 
     result[0] = '\0';
     int amount_of_file = 3;
-    const char *str = "ab\nab";
+    const char *str = "3\n\n3"; //3\n\n3
     //printf("%sa", str);
     size_t capacity = 1;
 

@@ -171,7 +171,7 @@ int main() {
     ///////////////////////////////////////////////// выпуклый ли многоугольник 1, впуклый 0
     int result11 = 0;
     int num_vertices1 = 5;
-    Errors err1 = is_convex(&result11, num_vertices1, 0.0, 3.0, 1.0, 7.0, 5.0, 8.0, 6.0, 6.0, 3.0, 0.0);
+    Errors err1 = is_convex(&result11, num_vertices1, 0.0, 0.0, 0.0, 5.0, 5.0, 5.0, 3.0,3.0, 5.0,0.0);
     if (err1 == INVALID_ARG) {
         printf("Ошибка в подаваемых аргументах\n");
     } else if (err1 == INVALID_MEMORY) {

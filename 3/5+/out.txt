@@ -30,3 +30,7 @@ Student: John Doe, Group: CS101, Average Grade: 89.60
 Above Average (84.549995): 
 Student: John Doe, Group: CS101, Average Grade: 89.60
 Student: Jane Smint, Group: CS181, Average Grade: 88.20
+Student: Alice Smith, Group: CS102, Average Grade: 89.199997
+Student: Emma Davis, Group: CS104, Average Grade: 91.000000
+Student: Bob Johnson, Group: CS102, Average Grade: 82.800003
+Student: Carol Williams, Group: CS103, Average Grade: 92.199997

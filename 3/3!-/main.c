@@ -4,7 +4,6 @@
 #include <limits.h>
 #include <unistd.h>
 #include <ctype.h>
-//не вывозит вещественную зарплату
 
 #define PATH_M 1024
 #define MAX_LEN_NAME 50
@@ -121,7 +120,7 @@ int readEmployees(const char *file_in, Employee **employees, int *count) {
         }
 
         Employee emp;
-        char buffer[MAX_LEN_NAME];
+        char buffer[MAX_LEN_NAME]; //поменять на 10
         int index = 0;
         int ch;
 
