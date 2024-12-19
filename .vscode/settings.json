@@ -49,6 +49,7 @@
         "stdlib.h": "c",
         "stdarg.h": "c",
         "fstream": "cpp",
-        "main,cpp": "cpp"
+        "main,cpp": "cpp",
+        "кюс": "cpp"
     }
 }
