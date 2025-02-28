@@ -112,15 +112,9 @@ public:
     }
 
     vector(size_t n_size, double n_val) : size(n_size), capacity(n_size), data(new double[n_size]) {
-        for (int i = 0; i < n_size; ++i) {
-            data[i] = n_val;
-        }
     } 
 
     vector(size_t n_size) : size(n_size), capacity(n_size), data(new double[n_size]) {
-        for (int i = 0; i < n_size; ++i) {
-            data[i] = 0.0;
-        }
     } 
 
     vector(vector::Iterator beg, vector::Iterator end) {
