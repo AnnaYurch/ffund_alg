@@ -47,7 +47,7 @@ void shell(char *username, int limit) {
 int main(int argc, char *argv[]) {
     if (argc < 3) {
         fprintf(stderr, "Usage: child <username> <limit>\n");
-        exit(1);
+        return 1;
     }
     char *username = argv[1];
     int limit = atoi(argv[2]);

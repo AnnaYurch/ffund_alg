@@ -135,7 +135,7 @@ int main() {
     }
 
     while (1) {
-        //валидация
+        //валидация (проверить если уже такой логин)
         char login[MAX_LEN_OF_LOGIN + 1];
         int pin;
         printf("Login: ");
@@ -179,14 +179,20 @@ int main() {
         //printf("continue\n");
 
         pid_t pid = fork();
+        //после этого возникают 2 идентичных процесса (родитель=индефикатру ребенка/ребенок=0)
         if (pid == 0) {
-            char limit_str[10];
+            char limit_str[MIN_LIMIT_OF_COMMANDS];
             sprintf(limit_str, "%d", all_users[user_index].limit_of_command);
+            //заменяем текущий процесс на child (загружаем и запускаем child)
             execl("./child", "child", all_users[user_index].login, limit_str, NULL);
-            perror("Failed to execute child process");
-            exit(1); //0?
+            //дальше ничего не выполняется, если execl успешен
+            printf("Failed to execute child process");
+            return 1;
+        } else if (pid > 0) {
+            printf("User %s logged in. We are ready for new users", all_users[all_users_count].login);
         } else {
-             wait(NULL);
+            printf("fork failed");
+            return 1;
         }
     }
 
