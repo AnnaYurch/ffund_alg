@@ -223,7 +223,7 @@ int main() {
         size_t i = 0;
         char ch;
         //считываем login
-        while (i < 5) {
+        while (i < MAX_LEN_OF_LOGIN) {
             ch = getchar();
             if (ch == '\n') {
                 break;
