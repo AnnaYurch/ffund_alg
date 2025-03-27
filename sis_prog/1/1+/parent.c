@@ -168,9 +168,9 @@ Errors register_user(char *login, int pin, int *res_user_index) {
     }
 
     //printf("2");
-    size_t capacity = MAX_NORMAL_NUM_OF_USERS; // начальная емкость
+    size_t capacity = MAX_NORMAL_NUM_OF_USERS;
     if (all_users_count + 1 >= capacity) {
-        size_t new_capacity = capacity * 2; // Увеличиваем в 2 раза
+        size_t new_capacity = capacity * 2;
         if (new_capacity > MAX_UNNORMAL_NUM_OF_USERS) {
             new_capacity = MAX_UNNORMAL_NUM_OF_USERS;
         }
@@ -332,13 +332,11 @@ int main() {
         //printf("continue\n");
 
         pid_t pid = fork();
-        //после этого возникают 2 идентичных процесса (родитель=индефикатру ребенка/ребенок=0)
         if (pid == 0) {
             char limit_str[10];
             sprintf(limit_str, "%d", all_users[user_index].limit_of_command);
-            //заменяем текущий процесс на child (загружаем и запускаем child)
             execl("./child", "child", all_users[user_index].login, limit_str, NULL);
-            //дальше ничего не выполняется, если execl успешен
+
             printf("Failed to execute child process");
             return 1;
         } else if (pid > 0) {

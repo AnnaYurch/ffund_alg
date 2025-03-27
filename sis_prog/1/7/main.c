@@ -20,19 +20,43 @@ typedef enum Errors {
 } Errors;
 
 Errors list_directory(const char *path) {
-    int fd = open(path, O_RDONLY | O_DIRECTORY); //только для чтения и только для каталогов
+    int fd = open(path, O_RDONLY | O_DIRECTORY);
     if (fd == -1) {
         return INVALID_PATH;
     }
 
     char buffer[1024];
-    ssize_t bytes_read; // -1
+    ssize_t bytes_read;
 
     while ((bytes_read = syscall(SYS_getdents64, fd, buffer, sizeof(buffer))) > 0) {
         for (char *ptr = buffer; ptr < buffer + bytes_read; ptr += *(unsigned short *)(ptr + 16)) { //de_reclen
             char *d_name = ptr + 19;
-            if (*d_name != '.') {    
-                printf("   %s\n", d_name);
+            ino64_t inode = *(ino64_t *)ptr; //inode файла
+            unsigned char d_type = *(ptr + 18); //тип файла
+
+            if (*d_name != '.') {   
+                if (d_type == 0) {
+                    printf("   unknown: ");
+                } else if (d_type == 1) {
+                    printf("   fifo/pipe: ");
+                } else if (d_type == 2) {
+                    printf("   char device: ");
+                } else if (d_type == 4) {
+                    printf("   directory: ");
+                } else if (d_type == 6) {
+                    printf("   block device: ");
+                } else if (d_type == 8) {
+                    printf("   file: ");
+                } else if (d_type == 10) {
+                    printf("   symlink: ");
+                } else if (d_type == 12) {
+                    printf("   socket: ");
+                } else {
+                    printf("   other: ");
+                }
+                
+                printf("%s [inode: %lu]\n", d_name, inode);
+                
             }
         }
     }

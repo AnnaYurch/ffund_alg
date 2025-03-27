@@ -34,13 +34,13 @@ char *my_strptime(const char *buf, const char *format, struct tm *tm) {
         tm->tm_hour = 0;          
         tm->tm_min = 0;
         tm->tm_sec = 0;
-        return (char *)(buf + strlen(buf)); // Возвращаем указатель на конец строки
+        return (char *)(buf + strlen(buf)); 
     }
     return NULL;
 }
 
 Errors update_limit_in_file(const char *target_username, int new_limit) {
-    FILE *file = fopen(NAME_OF_FILE, "rb+"); //чтение + запись
+    FILE *file = fopen(NAME_OF_FILE, "rb+");
     if (!file) {
         return INVALID_FILE;
     }
@@ -65,7 +65,6 @@ Errors update_limit_in_file(const char *target_username, int new_limit) {
     return INVALID_READ;
 }
 
-//лимит команд не работает
 void shell(char *username, int *limit) {
     char command[30];
     int count = 0;
