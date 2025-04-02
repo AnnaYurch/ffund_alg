@@ -31,8 +31,8 @@ Errors list_directory(const char *path) {
     while ((bytes_read = syscall(SYS_getdents64, fd, buffer, sizeof(buffer))) > 0) {
         for (char *ptr = buffer; ptr < buffer + bytes_read; ptr += *(unsigned short *)(ptr + 16)) { //de_reclen
             char *d_name = ptr + 19;
-            ino64_t inode = *(ino64_t *)ptr; //inode файла
-            unsigned char d_type = *(ptr + 18); //тип файла
+            ino64_t inode = *(ino64_t *)ptr; 
+            unsigned char d_type = *(ptr + 18);
 
             if (*d_name != '.') {   
                 if (d_type == 0) {
