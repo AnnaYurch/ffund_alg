@@ -21,36 +21,59 @@ typedef enum Errors {
     INVALID_READ,
     INVALID_PATH,
     INVALID_SYSCALL,
+    WE_FIND_STR,
+    WE_NOT_FIND_STR,
     OK
 } Errors;
 
-Errors xorN(const char *filename, int N) {
-    FILE *file = fopen(filename, "r");
+void xorN(const char *filename, int N) {
+    FILE *file = fopen(filename, "r");  // Открываем файл в текстовом режиме
     if (!file) {
-        return INVALID_FILE;
+        fprintf(stderr, "Ошибка при fopen %s\n", filename);
+        return;
     }
 
-    int blockSize = 1 << N;
-    uint8_t *buffer = (uint8_t *)malloc(blockSize);
+    int block_len_bits = 1 << N;          //длина блока в битах (возведение в ^2)
+    int block_len_bytes = (block_len_bits + 7) / 8; // Размер блока в байтах
+
+    char *buffer = (char*)malloc(block_len_bytes);  // Буфер для чтения данных из файла
     if (!buffer) {
-        perror("Ошибка выделения памяти");
+        fprintf(stderr, "Ошибка при malloc\n");
         fclose(file);
-        return INVALID_MEMORY;
+        return;
     }
 
-    uint8_t xorResult = 0;
-    size_t bytesRead;
-    while ((bytesRead = fread(buffer, 1, blockSize, file)) > 0) {
-        for (size_t i = 0; i < bytesRead; i++) {
-            xorResult ^= buffer[i];
+    char *result = (char*)calloc(block_len_bytes, 1); //Выделяем память для храниния XOR для каждого блока 
+    if (!result) {
+        fprintf(stderr, "Ошибка при calloc\n");
+        free(buffer);
+        fclose(file);
+        return;
+    }
+
+    // Чтение блоков файла
+    size_t bytes_read;
+    while ((bytes_read = fread(buffer, 1, block_len_bytes, file)) > 0) {
+        // Дополняем последний блок пробелами, если количество символов меньше необходимого
+        if (bytes_read < block_len_bytes) {
+            memset(buffer + bytes_read, FILL_BYTE, block_len_bytes - bytes_read);
+        }
+
+        // XOR всех блоков
+        for (int i = 0; i < block_len_bytes; i++) {
+            result[i] ^= buffer[i];
         }
     }
 
-    printf("XOR-%d для файла %s: %02X\n", N, filename, xorResult);
+    printf("%s: xor%d: ", filename, N);
+    for (int i = 0; i < block_len_bytes; i++) {
+        printf("%02X", result[i]); //в 16 формате
+    }
+    printf("\n");
 
     free(buffer);
+    free(result);
     fclose(file);
-    return OK;
 }
 
 Errors mask(const char *filename, uint32_t maskValue) {
@@ -121,6 +144,105 @@ void copyN(const char *filename, int N) {
     }
 }
 
+Errors search_str_in_this_file(FILE *file, const char *str) {
+    if (file == NULL || str == NULL) {
+        return INVALID_ARG;
+    } 
+
+    size_t str_len = strlen(str);
+    
+    int c; //текущий символ
+    int line_of_file = 1; //текущая строка
+    int ans_line_of_file = 1;
+    int pos_of_str = 0; //текущая позиция в строке
+    int index = 0; //индекс для прохода по строке
+    int ans_pos = 0; //позиция откуда начинает строка совпадать
+    int count_of_n = 0;
+
+    while ((c = getc(file)) != EOF) {  
+        pos_of_str++;
+        
+        if (c == str[index]) {
+            index++;
+            if (index == 1) {
+                ans_pos = pos_of_str;
+                ans_line_of_file = line_of_file;
+                if (c == '\n') { //что если "\n"
+                    count_of_n++;
+                    line_of_file++;
+                    pos_of_str = 0;
+                }
+            } else if (c == '\n') { //что если "\n"
+                count_of_n++;
+                line_of_file++;
+                pos_of_str = 0;
+            }
+            if (c == '\n' && str_len == 1) {
+                fclose(file);
+                return WE_FIND_STR;
+            }
+            if (index == str_len) {
+                fclose(file);
+                return WE_FIND_STR;
+            }
+        } else if (index > 0) {
+            //обнуляем все
+            fseek(file, -index, SEEK_CUR);
+            pos_of_str -= (index);
+            ans_pos = 0;
+            index = 0;
+            line_of_file = ans_line_of_file;
+            
+        } else if (c == '\n') {
+            line_of_file++;
+            pos_of_str = 0;
+            index = 0;
+        }
+    }
+
+    fclose(file);
+    return OK;
+}
+
+void findInFiles(int fileCount, char **files, const char *str) {
+    int found = 0;
+
+    for (int i = 0; i < fileCount; i++) {
+        pid_t pid = fork();
+
+        if (pid == -1) {
+            fprintf(stderr, "Ошибка fork\n");
+            exit(1);
+        }
+
+        if (pid == 0) { 
+            FILE *file = fopen(files[i], "r");
+            if (!file) {
+                fprintf(stderr, "Ошибка открытия файла\n");
+                exit(1);
+            }
+            Errors err = search_str_in_this_file(file, str);
+            if (err == WE_FIND_STR) {
+                printf("Строка найдена в файле: %s\n", files[i]);
+                exit(0);
+            }
+            exit(1);
+        }
+    }
+
+    for (int i = 0; i < fileCount; i++) {
+        int status;
+        wait(&status);
+        if (WEXITSTATUS(status) == 0) {
+            found = 1;
+        }
+    }
+
+    if (!found) {
+        printf("Строка не найдена ни в одном файле\n");
+    }
+}
+
 int main(int argc, char *argv[]) {
     if (argc < 3) {
         fprintf(stderr, "Использование: %s <файлы> <операция>\n", argv[0]);
@@ -137,16 +259,10 @@ int main(int argc, char *argv[]) {
     char **files = &argv[1];
 
     if (strncmp(argv[argc - 1], "xor", 3) == 0) {
-        /*
         int N = atoi(argv[argc - 1] + 3);
         for (int i = 0; i < fileCount; i++) {
-            Errors err1 = xorN(files[i], N);
-            if (err1 == INVALID_FILE) {
-                printf("INVALID_FILE\n");
-                return 1;
-            } 
+            xorN(files[i], N);
         }
-        */
     } else if (strncmp(argv[argc - 2], "mask", 4) == 0) {
         uint32_t maskValue = strtoul(argv[argc - 1], NULL, 16);
         for (int i = 0; i < fileCount; i++) {
@@ -167,9 +283,7 @@ int main(int argc, char *argv[]) {
             copyN(files[i], N);
         }
     } else if (strcmp(argv[argc - 2], "find") == 0) {
-        /*
         findInFiles(fileCount, files, argv[argc - 1]);
-        */
     } else {
         fprintf(stderr, "Неизвестная команда: %s\n", argv[argc - 1]);
         return 1;

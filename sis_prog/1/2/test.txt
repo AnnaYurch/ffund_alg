@@ -1,4 +1,12 @@
+для xor
+A  = 0x41 = 0100 0001  
+B  = 0x42 = 0100 0010  
+C  = 0x43 = 0100 0011  
+D  = 0x44 = 0100 0100  
+E  = 0x45 = 0100 0101
 
+2) 5 6 7 0 1
+3) 
 
 для mask:
 1) ./a.out file2_1.txt mask 0x12340000
@@ -12,3 +20,6 @@
 
 для copy
 1) ./a.out file2_1.txt file1_1.txt copy2
+
+для find 
+1) ./a.out file4_1.txt file4_1.txt find 3
